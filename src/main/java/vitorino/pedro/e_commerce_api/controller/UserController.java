@@ -25,7 +25,12 @@ public class UserController {
     }
 
     @PostMapping("/save")
-    public List<User> create(@RequestBody List<User> users) {
+    public User save(@RequestBody User user) {
+        return userService.save(user);
+    }
+
+    @PostMapping("/save/batch")
+    public List<User> saveAll(@RequestBody List<User> users) {
         return userService.saveAll(users);
     }
 
