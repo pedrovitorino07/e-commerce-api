@@ -27,13 +27,13 @@ public class UserService {
 
         User user = new User();
 
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
+        user.setFirstName(dto.firstName());
+        user.setLastName(dto.lastName());
+        user.setEmail(dto.email());
         user.setRole(Role.USER);
 
         String encodedPassword =
-                passwordEncoder.encode(dto.getPassword());
+                passwordEncoder.encode(dto.password());
 
         user.setPassword(encodedPassword);
 
@@ -53,27 +53,34 @@ public class UserService {
 
     private UserResponseDTO toResponseDTO(User user) {
 
-        UserResponseDTO dto = new UserResponseDTO();
-
-        dto.setId(user.getId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        dto.setEmail(user.getEmail());
-
-        return dto;
+        return new UserResponseDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserResponseDTO> findAll() {
+
+        return userRepository.findAll()
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
-    public User findById(Long id) {
-        return userRepository.findById(id).orElse(null);
+    public UserResponseDTO findById(Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        return toResponseDTO(user);
     }
 
     public UserResponseDTO save(UserRequestDTO dto) {
 
-        validateEmail(dto.getEmail());
+        validateEmail(dto.email());
 
         User user = prepareUser(dto);
 
@@ -88,7 +95,7 @@ public class UserService {
 
         for (UserRequestDTO dto : dtos) {
 
-            validateEmail(dto.getEmail());
+            validateEmail(dto.email());
 
             users.add(prepareUser(dto));
         }

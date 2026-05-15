@@ -26,14 +26,14 @@ public class AuthService {
     public String login(LoginRequestDTO dto) {
 
         User user = userRepository
-                .findByEmail(dto.getEmail())
+                .findByEmail(dto.email())
                 .orElseThrow(() ->
                         new RuntimeException("Invalid credentials")
                 );
 
         boolean passwordMatches =
                 passwordEncoder.matches(
-                        dto.getPassword(),
+                        dto.password(),
                         user.getPassword()
                 );
 

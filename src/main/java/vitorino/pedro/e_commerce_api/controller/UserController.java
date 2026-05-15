@@ -7,6 +7,7 @@ import vitorino.pedro.e_commerce_api.dto.LoginRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.User;
+import vitorino.pedro.e_commerce_api.repository.UserRepository;
 import vitorino.pedro.e_commerce_api.service.AuthService;
 import vitorino.pedro.e_commerce_api.service.UserService;
 
@@ -19,13 +20,16 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping
-    public List<User> findAll() {
+    public List<UserResponseDTO> findAll() {
         return userService.findAll();
     }
 
     @GetMapping("/{id}")
-    public User findById(@PathVariable Long id) {
+    public UserResponseDTO findById(@PathVariable Long id) {
         return userService.findById(id);
     }
 

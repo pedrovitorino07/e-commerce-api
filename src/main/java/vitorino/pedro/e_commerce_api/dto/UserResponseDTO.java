@@ -4,18 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vitorino.pedro.e_commerce_api.enums.Role;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserResponseDTO {
+public record UserResponseDTO (
+        Long id,
+        String firstName,
+        String lastName,
+        String email,
+        Role role
+) {
 
-    private Long id;
-
-    private String firstName;
-
-    private String lastName;
-
-    private String email;
 }
