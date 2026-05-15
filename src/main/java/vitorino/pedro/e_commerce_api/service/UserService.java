@@ -3,9 +3,11 @@ package vitorino.pedro.e_commerce_api.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import vitorino.pedro.e_commerce_api.dto.LoginRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.User;
+import vitorino.pedro.e_commerce_api.enums.Role;
 import vitorino.pedro.e_commerce_api.exception.EmailAlreadyExistsException;
 import vitorino.pedro.e_commerce_api.repository.UserRepository;
 
@@ -28,6 +30,7 @@ public class UserService {
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
+        user.setRole(Role.USER);
 
         String encodedPassword =
                 passwordEncoder.encode(dto.getPassword());
@@ -72,7 +75,7 @@ public class UserService {
 
         validateEmail(dto.getEmail());
 
-        User user = new User();
+        User user = prepareUser(dto);
 
         User savedUser = userRepository.save(user);
 

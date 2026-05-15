@@ -3,9 +3,11 @@ package vitorino.pedro.e_commerce_api.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import vitorino.pedro.e_commerce_api.dto.LoginRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.User;
+import vitorino.pedro.e_commerce_api.service.AuthService;
 import vitorino.pedro.e_commerce_api.service.UserService;
 
 import java.util.List;
