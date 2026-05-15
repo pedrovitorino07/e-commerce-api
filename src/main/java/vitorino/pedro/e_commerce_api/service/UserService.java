@@ -13,8 +13,24 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    private void prepareUser(User user) {
+
+        boolean exists = userRepository.existsByEmail(user.getEmail());
+
+        if (exists) {
+            throw new RuntimeException(
+                    "User with email " + user.getEmail() + " already exists"
+            );
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(user.getPassword())
+        );
+    }
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -25,14 +41,16 @@ public class UserService {
     }
 
     public User save(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        prepareUser(user);
+
         return userRepository.save(user);
     }
 
     public List<User> saveAll(List<User> users) {
+
         for (User user : users) {
-            String encodedPassword = passwordEncoder.encode(user.getPassword());
-            user.setPassword(encodedPassword);
+            prepareUser(user);
         }
 
         return userRepository.saveAll(users);
