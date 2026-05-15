@@ -3,9 +3,13 @@ package vitorino.pedro.e_commerce_api.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import vitorino.pedro.e_commerce_api.dto.UserRequestDTO;
+import vitorino.pedro.e_commerce_api.dto.UserResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.User;
+import vitorino.pedro.e_commerce_api.exception.EmailAlreadyExistsException;
 import vitorino.pedro.e_commerce_api.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,19 +21,43 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private void prepareUser(User user) {
+    private User prepareUser(UserRequestDTO dto) {
 
-        boolean exists = userRepository.existsByEmail(user.getEmail());
+        User user = new User();
+
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
+
+        String encodedPassword =
+                passwordEncoder.encode(dto.getPassword());
+
+        user.setPassword(encodedPassword);
+
+        return user;
+    }
+
+    private void validateEmail(String email) {
+
+        boolean exists = userRepository.existsByEmail(email);
 
         if (exists) {
-            throw new RuntimeException(
-                    "User with email " + user.getEmail() + " already exists"
+            throw new EmailAlreadyExistsException(
+                    "Email already exists!"
             );
         }
+    }
 
-        user.setPassword(
-                passwordEncoder.encode(user.getPassword())
-        );
+    private UserResponseDTO toResponseDTO(User user) {
+
+        UserResponseDTO dto = new UserResponseDTO();
+
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+
+        return dto;
     }
 
     public List<User> findAll() {
@@ -40,20 +68,34 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    public User save(User user) {
+    public UserResponseDTO save(UserRequestDTO dto) {
 
-        prepareUser(user);
+        validateEmail(dto.getEmail());
 
-        return userRepository.save(user);
+        User user = new User();
+
+        User savedUser = userRepository.save(user);
+
+        return toResponseDTO(savedUser);
     }
 
-    public List<User> saveAll(List<User> users) {
+    public List<UserResponseDTO> saveAll(List<UserRequestDTO> dtos) {
 
-        for (User user : users) {
-            prepareUser(user);
+        List<User> users = new ArrayList<>();
+
+        for (UserRequestDTO dto : dtos) {
+
+            validateEmail(dto.getEmail());
+
+            users.add(prepareUser(dto));
         }
 
-        return userRepository.saveAll(users);
+        List<User> savedUsers = userRepository.saveAll(users);
+
+        return savedUsers
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
     public void deleteById(Long id) {

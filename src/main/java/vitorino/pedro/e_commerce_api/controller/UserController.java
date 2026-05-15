@@ -1,7 +1,10 @@
 package vitorino.pedro.e_commerce_api.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import vitorino.pedro.e_commerce_api.dto.UserRequestDTO;
+import vitorino.pedro.e_commerce_api.dto.UserResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.User;
 import vitorino.pedro.e_commerce_api.service.UserService;
 
@@ -25,13 +28,17 @@ public class UserController {
     }
 
     @PostMapping("/save")
-    public User save(@RequestBody User user) {
-        return userService.save(user);
+    public UserResponseDTO save(
+           @Valid @RequestBody UserRequestDTO dto
+    ) {
+        return userService.save(dto);
     }
 
-    @PostMapping("/save/batch")
-    public List<User> saveAll(@RequestBody List<User> users) {
-        return userService.saveAll(users);
+    @PostMapping("/save-all")
+    public List<UserResponseDTO> saveAll(
+           @Valid @RequestBody List<UserRequestDTO> dtos
+    ) {
+        return userService.saveAll(dtos);
     }
 
     @DeleteMapping("/{id}")

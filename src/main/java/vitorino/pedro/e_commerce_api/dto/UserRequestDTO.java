@@ -1,32 +1,31 @@
-package vitorino.pedro.e_commerce_api.entity;
+package vitorino.pedro.e_commerce_api.dto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vitorino.pedro.e_commerce_api.enums.Role;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users")
-public class User {
+public class UserRequestDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     private String firstName;
 
+    @NotBlank
     private String lastName;
 
-    @Column(unique = true)
+    @NotBlank
+    @Email
     private String email;
 
+    @Size(min = 6)
     private String password;
-
-    private Role role;
 }
