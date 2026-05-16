@@ -3,44 +3,52 @@ package vitorino.pedro.e_commerce_api.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import vitorino.pedro.e_commerce_api.entity.Product;
-import vitorino.pedro.e_commerce_api.repository.ProductRepository;
+import vitorino.pedro.e_commerce_api.dto.ProductRequestDTO;
+import vitorino.pedro.e_commerce_api.dto.ProductResponseDTO;
 import vitorino.pedro.e_commerce_api.service.ProductService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/products")
 public class ProductController {
 
     @Autowired
     private ProductService productService;
 
-    @Autowired
-    private ProductRepository productRepository;
-
     @GetMapping
-    public List<Product> getProducts() {
+    public List<ProductResponseDTO> getProducts() {
         return productService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Product getProduct(@PathVariable Long id) {
+    public ProductResponseDTO getProduct(@PathVariable Long id) {
         return productService.findById(id);
     }
 
+    @GetMapping("/search")
+    public List<ProductResponseDTO> search(
+            @RequestParam String name
+    ) {
+        return productService.findByName(name);
+    }
+
     @PostMapping("/save")
-    public Product saveProduct(@Valid @RequestBody Product product) {
-        return productService.save(product);
+    public ProductResponseDTO saveProduct(
+            @Valid @RequestBody ProductRequestDTO dto
+    ) {
+        return productService.save(dto);
     }
 
     @PostMapping("/save-all")
-    public List<Product> saveAllProducts(@Valid @RequestBody List<Product> products) {
-        return productService.saveAll(products);
+    public List<ProductResponseDTO> saveAll(
+            @Valid @RequestBody List<ProductRequestDTO> dtos
+    ) {
+        return productService.saveAll(dtos);
     }
 
     @DeleteMapping("/{id}")
     public void deleteProduct(@PathVariable Long id) {
-        productRepository.deleteById(id);
+        productService.deleteById(id);
     }
 }

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vitorino.pedro.e_commerce_api.enums.Category;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,7 +31,8 @@ public class Product {
 
     private Integer stock;
 
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private Category category;
 
     private String brand;
 

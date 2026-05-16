@@ -6,9 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public record UserRequestDTO(
 
-        Long id,
-
-        @NotBlank String name,
+        @NotBlank
         String firstName,
 
         @NotBlank
