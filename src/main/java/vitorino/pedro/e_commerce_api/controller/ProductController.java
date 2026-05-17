@@ -2,6 +2,9 @@ package vitorino.pedro.e_commerce_api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import vitorino.pedro.e_commerce_api.dto.ProductRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.ProductResponseDTO;
@@ -17,9 +20,13 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public List<ProductResponseDTO> getProducts() {
-        return productService.findAll();
+    public Page<ProductResponseDTO> getProducts(
+            @PageableDefault(size = 10, sort = "name")
+            Pageable pageable
+    ) {
+        return productService.findAll(pageable);
     }
+
 
     @GetMapping("/{id}")
     public ProductResponseDTO getProduct(@PathVariable Long id) {

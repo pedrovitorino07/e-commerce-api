@@ -9,6 +9,7 @@ import vitorino.pedro.e_commerce_api.dto.UserResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.User;
 import vitorino.pedro.e_commerce_api.enums.Role;
 import vitorino.pedro.e_commerce_api.exception.EmailAlreadyExistsException;
+import vitorino.pedro.e_commerce_api.exception.UserNotFoundException;
 import vitorino.pedro.e_commerce_api.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -73,7 +74,11 @@ public class UserService {
     public UserResponseDTO findById(Long id) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found!"));
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User with id: " + id + " not found!"
+                        )
+                );
 
         return toResponseDTO(user);
     }

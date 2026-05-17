@@ -1,10 +1,13 @@
 package vitorino.pedro.e_commerce_api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vitorino.pedro.e_commerce_api.dto.ProductRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.ProductResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.Product;
+import vitorino.pedro.e_commerce_api.exception.ProductNotFoundException;
 import vitorino.pedro.e_commerce_api.repository.ProductRepository;
 
 import java.util.List;
@@ -46,18 +49,22 @@ public class ProductService {
         return product;
     }
 
-    public List<ProductResponseDTO> findAll() {
+    public Page<ProductResponseDTO> findAll(
+            Pageable pageable
+    ) {
 
-        return productRepository.findAll()
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
+        return productRepository.findAll(pageable)
+                .map(this::toResponseDTO);
     }
 
     public ProductResponseDTO findById(Long id) {
 
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                .orElseThrow(() ->
+                        new ProductNotFoundException(
+                                "Product with id: " + id + " not found!"
+                        )
+                );
 
         return toResponseDTO(product);
     }
