@@ -57,6 +57,27 @@ public class ProductService {
                 .map(this::toResponseDTO);
     }
 
+    public ProductResponseDTO update(
+            Long id,
+            ProductRequestDTO dto
+    ) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+        product.setName(dto.name());
+        product.setDescription(dto.description());
+        product.setBrand(dto.brand());
+        product.setPrice(dto.price());
+        product.setStock(dto.stock());
+        product.setCategory(dto.category());
+        product.setImageUrl(dto.imageUrl());
+
+        Product updatedProduct = productRepository.save(product);
+
+        return toResponseDTO(productRepository.save(product));
+    }
+
     public ProductResponseDTO findById(Long id) {
 
         Product product = productRepository.findById(id)

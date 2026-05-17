@@ -33,8 +33,7 @@ public class UserService {
         user.setEmail(dto.email());
         user.setRole(Role.USER);
 
-        String encodedPassword =
-                passwordEncoder.encode(dto.password());
+        String encodedPassword = passwordEncoder.encode(dto.password());
 
         user.setPassword(encodedPassword);
 
@@ -46,41 +45,47 @@ public class UserService {
         boolean exists = userRepository.existsByEmail(email);
 
         if (exists) {
-            throw new EmailAlreadyExistsException(
-                    "Email already exists!"
-            );
+            throw new EmailAlreadyExistsException("Email already exists!");
         }
     }
 
     private UserResponseDTO toResponseDTO(User user) {
 
-        return new UserResponseDTO(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getRole()
-        );
+        return new UserResponseDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole());
     }
 
     public List<UserResponseDTO> findAll() {
 
-        return userRepository.findAll()
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
+        return userRepository.findAll().stream().map(this::toResponseDTO).toList();
     }
 
     public UserResponseDTO findById(Long id) {
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new UserNotFoundException(
-                                "User with id: " + id + " not found!"
-                        )
-                );
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id: " + id + " not found!"));
 
         return toResponseDTO(user);
+    }
+
+    public UserResponseDTO update(Long id, UserRequestDTO dto) {
+
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id: " + id + " not found!"));
+
+        if (!user.getEmail().equals(dto.email())) {
+
+            validateEmail(dto.email());
+        }
+
+        user.setFirstName(dto.firstName());
+        user.setLastName(dto.lastName());
+        user.setEmail(dto.email());
+
+        String encodedPassword = passwordEncoder.encode(dto.password());
+
+        user.setPassword(encodedPassword);
+
+        User updatedUser = userRepository.save(user);
+
+        return toResponseDTO(updatedUser);
     }
 
     public UserResponseDTO save(UserRequestDTO dto) {
@@ -107,10 +112,7 @@ public class UserService {
 
         List<User> savedUsers = userRepository.saveAll(users);
 
-        return savedUsers
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
+        return savedUsers.stream().map(this::toResponseDTO).toList();
     }
 
     public void deleteById(Long id) {

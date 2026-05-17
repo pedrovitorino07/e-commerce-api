@@ -30,16 +30,21 @@ public class UserController {
         return userService.findById(id);
     }
 
+    @PutMapping("/{id}")
+    public UserResponseDTO update(@PathVariable Long id, @Valid @RequestBody UserRequestDTO dto) {
+        return userService.update(id, dto);
+    }
+
     @PostMapping("/save")
     public UserResponseDTO save(
-           @Valid @RequestBody UserRequestDTO dto
+            @Valid @RequestBody UserRequestDTO dto
     ) {
         return userService.save(dto);
     }
 
     @PostMapping("/save-all")
     public List<UserResponseDTO> saveAll(
-           @Valid @RequestBody List<UserRequestDTO> dtos
+            @Valid @RequestBody List<UserRequestDTO> dtos
     ) {
         return userService.saveAll(dtos);
     }

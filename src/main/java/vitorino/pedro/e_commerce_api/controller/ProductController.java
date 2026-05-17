@@ -20,10 +20,7 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public Page<ProductResponseDTO> getProducts(
-            @PageableDefault(size = 10, sort = "name")
-            Pageable pageable
-    ) {
+    public Page<ProductResponseDTO> getProducts(@PageableDefault(size = 10, sort = "name") Pageable pageable) {
         return productService.findAll(pageable);
     }
 
@@ -34,23 +31,22 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public List<ProductResponseDTO> search(
-            @RequestParam String name
-    ) {
+    public List<ProductResponseDTO> search(@RequestParam String name) {
         return productService.findByName(name);
     }
 
+    @PutMapping("/{id}")
+    public ProductResponseDTO updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO dto) {
+        return productService.update(id, dto);
+    }
+
     @PostMapping("/save")
-    public ProductResponseDTO saveProduct(
-            @Valid @RequestBody ProductRequestDTO dto
-    ) {
+    public ProductResponseDTO saveProduct(@Valid @RequestBody ProductRequestDTO dto) {
         return productService.save(dto);
     }
 
     @PostMapping("/save-all")
-    public List<ProductResponseDTO> saveAll(
-            @Valid @RequestBody List<ProductRequestDTO> dtos
-    ) {
+    public List<ProductResponseDTO> saveAll(@Valid @RequestBody List<ProductRequestDTO> dtos) {
         return productService.saveAll(dtos);
     }
 
