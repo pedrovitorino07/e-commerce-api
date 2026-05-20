@@ -1,46 +1,44 @@
 package vitorino.pedro.e_commerce_api.service;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import vitorino.pedro.e_commerce_api.dto.LoginRequestDTO;
+import vitorino.pedro.e_commerce_api.dto.LoginResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.User;
 import vitorino.pedro.e_commerce_api.repository.UserRepository;
 
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository repository;
     private final JwtService jwtService;
 
     public AuthService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            UserRepository repository,
             JwtService jwtService
     ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.repository = repository;
         this.jwtService = jwtService;
     }
 
-    public String login(LoginRequestDTO dto) {
+    public LoginResponseDTO login(LoginRequestDTO dto) {
 
-        User user = userRepository
-                .findByEmail(dto.email())
-                .orElseThrow(() ->
-                        new RuntimeException("Invalid credentials")
-                );
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        dto.email(),
+                        dto.password()
+                )
+        );
 
-        boolean passwordMatches =
-                passwordEncoder.matches(
-                        dto.password(),
-                        user.getPassword()
-                );
+        User user = repository.findByEmail(dto.email())
+                .orElseThrow();
 
-        if (!passwordMatches) {
-            throw new RuntimeException("Invalid credentials");
-        }
+        String token = jwtService.generateToken(user);
 
-        return jwtService.generateToken(user);
+        return new LoginResponseDTO(token);
     }
 }
