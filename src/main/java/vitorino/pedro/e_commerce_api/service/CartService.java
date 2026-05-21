@@ -1,0 +1,121 @@
+package vitorino.pedro.e_commerce_api.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import vitorino.pedro.e_commerce_api.entity.Cart;
+import vitorino.pedro.e_commerce_api.entity.CartItem;
+import vitorino.pedro.e_commerce_api.entity.Product;
+import vitorino.pedro.e_commerce_api.entity.User;
+import vitorino.pedro.e_commerce_api.repository.CartRepository;
+import vitorino.pedro.e_commerce_api.repository.ProductRepository;
+import vitorino.pedro.e_commerce_api.repository.UserRepository;
+
+import java.math.BigDecimal;
+
+@Service
+public class CartService {
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private User getAuthenticatedUser() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    private Cart getOrCreateCart(User user) {
+
+        return cartRepository.findByUser(user).orElseGet(() -> {
+
+            Cart cart = new Cart();
+
+            cart.setUser(user);
+
+            return cartRepository.save(cart);
+        });
+    }
+
+    public Cart addProduct(Long productId, Integer quantity) {
+
+        User user = getAuthenticatedUser();
+
+        Cart cart = getOrCreateCart(user);
+
+        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("Insufficient stock");
+        }
+
+        CartItem existingItem = cart.getItems().stream().filter(item -> item.getProduct().getId().equals(productId)).findFirst().orElse(null);
+
+        if (existingItem != null) {
+
+            existingItem.setQuantity(existingItem.getQuantity() + quantity);
+
+            existingItem.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(existingItem.getQuantity())));
+
+        } else {
+
+            CartItem item = new CartItem();
+
+            item.setCart(cart);
+            item.setProduct(product);
+            item.setQuantity(quantity);
+
+            item.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
+
+            cart.getItems().add(item);
+        }
+
+        updateCartTotal(cart);
+
+        return cartRepository.save(cart);
+    }
+
+    private void updateCartTotal(Cart cart) {
+
+        BigDecimal total = cart.getItems()
+                .stream()
+                .map(CartItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        cart.setTotalPrice(total);
+    }
+
+    public Cart getCart() {
+
+        User user = getAuthenticatedUser();
+
+        return getOrCreateCart(user);
+    }
+
+    public void removeProduct(Long productId) {
+
+        User user = getAuthenticatedUser();
+
+        Cart cart = getOrCreateCart(user);
+
+        cart.getItems().removeIf(item ->
+                item.getProduct()
+                        .getId()
+                        .equals(productId)
+        );
+
+        updateCartTotal(cart);
+
+        cartRepository.save(cart);
+    }
+}
