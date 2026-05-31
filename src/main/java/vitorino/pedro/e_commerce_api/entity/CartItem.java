@@ -26,7 +26,7 @@ public class CartItem {
     @ManyToOne
     private Product product;
 
-    private Integer Quantity;
+    private Integer quantity;
 
     private BigDecimal subtotal;
 }

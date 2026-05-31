@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import vitorino.pedro.e_commerce_api.dto.CartItemResponseDTO;
+import vitorino.pedro.e_commerce_api.dto.CartResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.Cart;
 import vitorino.pedro.e_commerce_api.entity.CartItem;
 import vitorino.pedro.e_commerce_api.entity.Product;
@@ -13,6 +15,7 @@ import vitorino.pedro.e_commerce_api.repository.ProductRepository;
 import vitorino.pedro.e_commerce_api.repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class CartService {
@@ -28,44 +31,88 @@ public class CartService {
 
     private User getAuthenticatedUser() {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
 
         String email = authentication.getName();
 
-        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    private CartResponseDTO toResponseDTO(Cart cart) {
+
+        List<CartItemResponseDTO> items =
+                cart.getItems()
+                        .stream()
+                        .map(item -> new CartItemResponseDTO(
+                                item.getProduct().getId(),
+                                item.getProduct().getName(),
+                                item.getQuantity(),
+                                item.getProduct().getPrice(),
+                                item.getSubtotal()
+                        ))
+                        .toList();
+
+        return new CartResponseDTO(
+                cart.getId(),
+                cart.getTotalPrice(),
+                items
+        );
     }
 
     private Cart getOrCreateCart(User user) {
 
-        return cartRepository.findByUser(user).orElseGet(() -> {
+        return cartRepository.findByUser(user)
+                .orElseGet(() -> {
 
-            Cart cart = new Cart();
+                    Cart cart = new Cart();
 
-            cart.setUser(user);
+                    cart.setUser(user);
 
-            return cartRepository.save(cart);
-        });
+                    return cartRepository.save(cart);
+                });
     }
 
-    public Cart addProduct(Long productId, Integer quantity) {
+    public CartResponseDTO addProduct(
+            Long productId,
+            Integer quantity
+    ) {
 
         User user = getAuthenticatedUser();
 
         Cart cart = getOrCreateCart(user);
 
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found"));
 
         if (product.getStock() < quantity) {
             throw new RuntimeException("Insufficient stock");
         }
 
-        CartItem existingItem = cart.getItems().stream().filter(item -> item.getProduct().getId().equals(productId)).findFirst().orElse(null);
+        CartItem existingItem = cart.getItems()
+                .stream()
+                .filter(item ->
+                        item.getProduct()
+                                .getId()
+                                .equals(productId))
+                .findFirst()
+                .orElse(null);
 
         if (existingItem != null) {
 
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
+            existingItem.setQuantity(
+                    existingItem.getQuantity() + quantity
+            );
 
-            existingItem.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(existingItem.getQuantity())));
+            existingItem.setSubtotal(
+                    product.getPrice().multiply(
+                            BigDecimal.valueOf(
+                                    existingItem.getQuantity()
+                            )
+                    )
+            );
 
         } else {
 
@@ -75,31 +122,29 @@ public class CartService {
             item.setProduct(product);
             item.setQuantity(quantity);
 
-            item.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
+            item.setSubtotal(
+                    product.getPrice().multiply(
+                            BigDecimal.valueOf(quantity)
+                    )
+            );
 
             cart.getItems().add(item);
         }
 
         updateCartTotal(cart);
 
-        return cartRepository.save(cart);
+        Cart savedCart = cartRepository.save(cart);
+
+        return toResponseDTO(savedCart);
     }
 
-    private void updateCartTotal(Cart cart) {
-
-        BigDecimal total = cart.getItems()
-                .stream()
-                .map(CartItem::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        cart.setTotalPrice(total);
-    }
-
-    public Cart getCart() {
+    public CartResponseDTO getCart() {
 
         User user = getAuthenticatedUser();
 
-        return getOrCreateCart(user);
+        Cart cart = getOrCreateCart(user);
+
+        return toResponseDTO(cart);
     }
 
     public void removeProduct(Long productId) {
@@ -117,5 +162,15 @@ public class CartService {
         updateCartTotal(cart);
 
         cartRepository.save(cart);
+    }
+
+    private void updateCartTotal(Cart cart) {
+
+        BigDecimal total = cart.getItems()
+                .stream()
+                .map(CartItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        cart.setTotalPrice(total);
     }
 }

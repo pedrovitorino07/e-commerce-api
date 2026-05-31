@@ -1,5 +1,6 @@
 package vitorino.pedro.e_commerce_api.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ import vitorino.pedro.e_commerce_api.service.ProductService;
 
 import java.util.List;
 
+@Tag(name = "Products",
+        description = "Gerenciamento de produtos")
 @RestController
 @RequestMapping("/products")
 public class ProductController {

@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import vitorino.pedro.e_commerce_api.dto.OrderItemResponseDTO;
+import vitorino.pedro.e_commerce_api.dto.OrderResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.*;
 import vitorino.pedro.e_commerce_api.enums.OrderStatus;
 import vitorino.pedro.e_commerce_api.repository.CartRepository;
@@ -45,8 +47,31 @@ public class OrderService {
                 );
     }
 
+    private OrderResponseDTO toResponseDTO(Order order) {
+
+        List<OrderItemResponseDTO> items =
+                order.getItems()
+                        .stream()
+                        .map(item -> new OrderItemResponseDTO(
+                                item.getProductId(),
+                                item.getProductName(),
+                                item.getPrice(),
+                                item.getQuantity(),
+                                item.getSubtotal()
+                        ))
+                        .toList();
+
+        return new OrderResponseDTO(
+                order.getId(),
+                order.getTotalPrice(),
+                order.getStatus(),
+                order.getCreatedAt(),
+                items
+        );
+    }
+
     @Transactional
-    public Order checkout() {
+    public OrderResponseDTO checkout() {
 
         User user = getAuthenticatedUser();
 
@@ -55,7 +80,7 @@ public class OrderService {
                         new RuntimeException("Cart not found")
                 );
 
-        if(cart.getItems().isEmpty()) {
+        if (cart.getItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
 
@@ -63,11 +88,11 @@ public class OrderService {
 
         order.setUser(user);
 
-        for(CartItem cartItem : cart.getItems()) {
+        for (CartItem cartItem : cart.getItems()) {
 
             Product product = cartItem.getProduct();
 
-            if(product.getStock() < cartItem.getQuantity()) {
+            if (product.getStock() < cartItem.getQuantity()) {
                 throw new RuntimeException(
                         "Insufficient stock for product: "
                                 + product.getName()
@@ -75,8 +100,7 @@ public class OrderService {
             }
 
             product.setStock(
-                    product.getStock()
-                            - cartItem.getQuantity()
+                    product.getStock() - cartItem.getQuantity()
             );
 
             productRepository.save(product);
@@ -84,15 +108,10 @@ public class OrderService {
             OrderItem orderItem = new OrderItem();
 
             orderItem.setOrder(order);
-
             orderItem.setProductId(product.getId());
-
             orderItem.setProductName(product.getName());
-
             orderItem.setPrice(product.getPrice());
-
             orderItem.setQuantity(cartItem.getQuantity());
-
             orderItem.setSubtotal(cartItem.getSubtotal());
 
             order.getItems().add(orderItem);
@@ -104,28 +123,29 @@ public class OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         order.setTotalPrice(total);
-
         order.setStatus(OrderStatus.PENDING);
 
         Order savedOrder = orderRepository.save(order);
 
         cart.getItems().clear();
-
         cart.setTotalPrice(BigDecimal.ZERO);
 
         cartRepository.save(cart);
 
-        return savedOrder;
+        return toResponseDTO(savedOrder);
     }
 
-    public List<Order> getMyOrders() {
+    public List<OrderResponseDTO> getMyOrders() {
 
         User user = getAuthenticatedUser();
 
-        return orderRepository.findByUser(user);
+        return orderRepository.findByUser(user)
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
-    public Order getOrderById(Long id) {
+    public OrderResponseDTO getOrderById(Long id) {
 
         User user = getAuthenticatedUser();
 
@@ -134,10 +154,10 @@ public class OrderService {
                         new RuntimeException("Order not found")
                 );
 
-        if(!order.getUser().getId().equals(user.getId())) {
+        if (!order.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Access denied");
         }
 
-        return order;
+        return toResponseDTO(order);
     }
 }

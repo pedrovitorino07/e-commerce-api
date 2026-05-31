@@ -1,5 +1,6 @@
 package vitorino.pedro.e_commerce_api.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,8 @@ import vitorino.pedro.e_commerce_api.service.UserService;
 
 import java.util.List;
 
+@Tag(name = "Users",
+        description = "Gerenciamento de usuários")
 @RestController
 @RequestMapping("/user")
 public class UserController {
