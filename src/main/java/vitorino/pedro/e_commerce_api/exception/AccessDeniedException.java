@@ -1,0 +1,7 @@
+package vitorino.pedro.e_commerce_api.exception;
+
+public class AccessDeniedException extends RuntimeException {
+    public AccessDeniedException(String message) {
+        super(message);
+    }
+}

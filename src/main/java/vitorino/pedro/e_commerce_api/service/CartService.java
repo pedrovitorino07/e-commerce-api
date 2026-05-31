@@ -10,6 +10,9 @@ import vitorino.pedro.e_commerce_api.entity.Cart;
 import vitorino.pedro.e_commerce_api.entity.CartItem;
 import vitorino.pedro.e_commerce_api.entity.Product;
 import vitorino.pedro.e_commerce_api.entity.User;
+import vitorino.pedro.e_commerce_api.exception.InsufficientStockException;
+import vitorino.pedro.e_commerce_api.exception.ProductNotFoundException;
+import vitorino.pedro.e_commerce_api.exception.UserNotFoundException;
 import vitorino.pedro.e_commerce_api.repository.CartRepository;
 import vitorino.pedro.e_commerce_api.repository.ProductRepository;
 import vitorino.pedro.e_commerce_api.repository.UserRepository;
@@ -37,7 +40,7 @@ public class CartService {
         String email = authentication.getName();
 
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not authenticated"));
     }
 
     private CartResponseDTO toResponseDTO(Cart cart) {
@@ -85,10 +88,10 @@ public class CartService {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() ->
-                        new RuntimeException("Product not found"));
+                        new ProductNotFoundException("Product not found"));
 
         if (product.getStock() < quantity) {
-            throw new RuntimeException("Insufficient stock");
+            throw new InsufficientStockException("Insufficient stock");
         }
 
         CartItem existingItem = cart.getItems()

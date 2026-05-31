@@ -59,7 +59,7 @@ public class ProductService {
 
         Product updatedProduct = productRepository.save(product);
 
-        return toResponseDTO(productRepository.save(product));
+        return toResponseDTO(updatedProduct);
     }
 
     public ProductResponseDTO findById(Long id) {
