@@ -126,6 +126,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handlePaymentNotFound(
+            PaymentNotFoundException ex
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "Payment Not Found",
+                ex.getMessage()
+        );
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponseDTO> handleIllegalState(
             IllegalStateException ex
