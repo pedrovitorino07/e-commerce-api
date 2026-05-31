@@ -130,10 +130,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleGeneral(
             Exception ex
     ) {
+        ex.printStackTrace();
+
         return buildError(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Internal Server Error",
-                "An unexpected error occurred"
+                ex.getMessage()
         );
     }
 }

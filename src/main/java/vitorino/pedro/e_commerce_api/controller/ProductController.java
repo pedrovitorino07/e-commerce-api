@@ -2,6 +2,7 @@ package vitorino.pedro.e_commerce_api.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,11 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public Page<ProductResponseDTO> getProducts(@PageableDefault(size = 10, sort = "name") Pageable pageable) {
+    public Page<ProductResponseDTO> getProducts(
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "name")
+            Pageable pageable
+    ) {
         return productService.findAll(pageable);
     }
 
