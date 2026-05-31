@@ -140,4 +140,46 @@ public class OrderService {
 
         return toResponseDTO(order);
     }
+
+    private OrderStatus getNextStatus(OrderStatus currentStatus) {
+
+        return switch (currentStatus) {
+
+            case PENDING -> OrderStatus.PAID;
+
+            case PAID -> OrderStatus.SHIPPED;
+
+            case SHIPPED -> OrderStatus.DELIVERED;
+
+            case DELIVERED -> throw new IllegalStateException("Pedido já foi entregue");
+
+            case CANCELLED -> throw new IllegalStateException("Pedido cancelado não pode ser alterado");
+        };
+    }
+
+    public OrderResponseDTO advanceStatus(Long id) {
+
+        Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException("Pedido não encontrado"));
+
+        order.setStatus(getNextStatus(order.getStatus()));
+
+        Order updatedOrder = orderRepository.save(order);
+
+        return toResponseDTO(updatedOrder);
+    }
+
+    public OrderResponseDTO cancelOrder(Long id) {
+
+        Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException("Pedido não encontrado"));
+
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Pedido entregue não pode ser cancelado");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+
+        Order updatedOrder = orderRepository.save(order);
+
+        return toResponseDTO(updatedOrder);
+    }
 }

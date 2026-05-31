@@ -126,6 +126,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIllegalState(
+            IllegalStateException ex
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "Invalid Order State",
+                ex.getMessage()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGeneral(
             Exception ex

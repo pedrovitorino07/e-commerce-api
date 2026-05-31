@@ -6,13 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vitorino.pedro.e_commerce_api.dto.OrderResponseDTO;
-import vitorino.pedro.e_commerce_api.dto.ProductResponseDTO;
-import vitorino.pedro.e_commerce_api.entity.Order;
 import vitorino.pedro.e_commerce_api.service.OrderService;
-
-import java.util.List;
 
 @Tag(name = "Orders",
         description = "Pedidos dos usuários")
@@ -44,5 +41,21 @@ public class OrderController {
             @PathVariable Long id
     ) {
         return orderService.getOrderById(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/advance")
+    public OrderResponseDTO advanceStatus(
+            @PathVariable Long id
+    ) {
+        return orderService.advanceStatus(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/cancel")
+    public OrderResponseDTO cancelOrder(
+            @PathVariable Long id
+    ) {
+        return orderService.cancelOrder(id);
     }
 }
