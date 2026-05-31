@@ -1,19 +1,16 @@
 package vitorino.pedro.e_commerce_api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import vitorino.pedro.e_commerce_api.dto.LoginRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserResponseDTO;
 import vitorino.pedro.e_commerce_api.entity.User;
-import vitorino.pedro.e_commerce_api.enums.Role;
 import vitorino.pedro.e_commerce_api.exception.EmailAlreadyExistsException;
 import vitorino.pedro.e_commerce_api.exception.UserNotFoundException;
 import vitorino.pedro.e_commerce_api.repository.UserRepository;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class UserService {
@@ -24,20 +21,13 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private User prepareUser(UserRequestDTO dto) {
+    private User getAuthenticatedUser() {
 
-        User user = new User();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        user.setFirstName(dto.firstName());
-        user.setLastName(dto.lastName());
-        user.setEmail(dto.email());
-        user.setRole(Role.USER);
+        String email = authentication.getName();
 
-        String encodedPassword = passwordEncoder.encode(dto.password());
-
-        user.setPassword(encodedPassword);
-
-        return user;
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
     private void validateEmail(String email) {
@@ -54,24 +44,18 @@ public class UserService {
         return new UserResponseDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole());
     }
 
-    public List<UserResponseDTO> findAll() {
+    public UserResponseDTO getProfile() {
 
-        return userRepository.findAll().stream().map(this::toResponseDTO).toList();
-    }
-
-    public UserResponseDTO findById(Long id) {
-
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id: " + id + " not found!"));
+        User user = getAuthenticatedUser();
 
         return toResponseDTO(user);
     }
 
-    public UserResponseDTO update(Long id, UserRequestDTO dto) {
+    public UserResponseDTO updateProfile(UserRequestDTO dto) {
 
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with id: " + id + " not found!"));
+        User user = getAuthenticatedUser();
 
         if (!user.getEmail().equals(dto.email())) {
-
             validateEmail(dto.email());
         }
 
@@ -79,16 +63,18 @@ public class UserService {
         user.setLastName(dto.lastName());
         user.setEmail(dto.email());
 
-        String encodedPassword = passwordEncoder.encode(dto.password());
-
-        user.setPassword(encodedPassword);
+        user.setPassword(passwordEncoder.encode(dto.password()));
 
         User updatedUser = userRepository.save(user);
 
         return toResponseDTO(updatedUser);
     }
 
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
+    public void deleteProfile() {
+
+        User user = getAuthenticatedUser();
+
+        userRepository.delete(user);
+
     }
 }

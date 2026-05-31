@@ -6,40 +6,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import vitorino.pedro.e_commerce_api.dto.UserRequestDTO;
 import vitorino.pedro.e_commerce_api.dto.UserResponseDTO;
-import vitorino.pedro.e_commerce_api.repository.UserRepository;
 import vitorino.pedro.e_commerce_api.service.UserService;
 
-import java.util.List;
-
-@Tag(name = "Users",
-        description = "Gerenciamento de usuários")
+@Tag(name = "Users", description = "Perfil do usuário autenticado")
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private UserRepository userRepository;
+    @GetMapping("/me")
+    public UserResponseDTO getProfile() {
 
-    @GetMapping
-    public List<UserResponseDTO> findAll() {
-        return userService.findAll();
+        return userService.getProfile();
     }
 
-    @GetMapping("/{id}")
-    public UserResponseDTO findById(@PathVariable Long id) {
-        return userService.findById(id);
+    @PutMapping("/me")
+    public UserResponseDTO updateProfile(@Valid @RequestBody UserRequestDTO dto) {
+
+        return userService.updateProfile(dto);
     }
 
-    @PutMapping("/{id}")
-    public UserResponseDTO update(@PathVariable Long id, @Valid @RequestBody UserRequestDTO dto) {
-        return userService.update(id, dto);
-    }
+    @DeleteMapping("/me")
+    public void deleteProfile() {
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        userService.deleteById(id);
+        userService.deleteProfile();
     }
 }
