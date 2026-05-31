@@ -38,20 +38,6 @@ public class UserController {
         return userService.update(id, dto);
     }
 
-    @PostMapping("/save")
-    public UserResponseDTO save(
-            @Valid @RequestBody UserRequestDTO dto
-    ) {
-        return userService.save(dto);
-    }
-
-    @PostMapping("/save-all")
-    public List<UserResponseDTO> saveAll(
-            @Valid @RequestBody List<UserRequestDTO> dtos
-    ) {
-        return userService.saveAll(dtos);
-    }
-
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         userService.deleteById(id);

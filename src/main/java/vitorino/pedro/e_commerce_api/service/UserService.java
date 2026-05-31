@@ -88,33 +88,6 @@ public class UserService {
         return toResponseDTO(updatedUser);
     }
 
-    public UserResponseDTO save(UserRequestDTO dto) {
-
-        validateEmail(dto.email());
-
-        User user = prepareUser(dto);
-
-        User savedUser = userRepository.save(user);
-
-        return toResponseDTO(savedUser);
-    }
-
-    public List<UserResponseDTO> saveAll(List<UserRequestDTO> dtos) {
-
-        List<User> users = new ArrayList<>();
-
-        for (UserRequestDTO dto : dtos) {
-
-            validateEmail(dto.email());
-
-            users.add(prepareUser(dto));
-        }
-
-        List<User> savedUsers = userRepository.saveAll(users);
-
-        return savedUsers.stream().map(this::toResponseDTO).toList();
-    }
-
     public void deleteById(Long id) {
         userRepository.deleteById(id);
     }
